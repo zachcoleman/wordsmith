@@ -1,0 +1,2 @@
+# wordsmith
+Wordle Solver
