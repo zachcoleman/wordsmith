@@ -35,8 +35,32 @@ func jaccardSimilarity(words ...string) float64 {
 	return num / denom
 }
 
+func combine(n int, k int) [][]int {
+
+	if k == 1 {
+		ret := [][]int{}
+		for n > 0 {
+			ret = append(ret, []int{n})
+			n--
+		}
+		return ret
+	}
+
+	ret := [][]int{}
+	for n > 1 {
+		set := combine(n-1, k-1)
+		for _, subset := range set {
+			tmp := append([]int{n}, subset...)
+			ret = append(ret, tmp)
+		}
+		n--
+	}
+
+	return ret
+}
+
 func main() {
-	// read in file
+	// read in file of words
 	content, err := ioutil.ReadFile("./words.txt")
 	if err != nil {
 		fmt.Println("error reading file")
@@ -44,25 +68,31 @@ func main() {
 	}
 	words := strings.Split(string(content), "\n")
 
-	wordDist := make(map[int]int)
-	for _, word := range words {
-		d := distinctLetters(word)
-		wordDist[d] += 1
-		if d == 0 {
-			fmt.Println(word)
+	// filter to only unique words
+	i, j := 0, len(words)-1
+	for i < j {
+		if distinctLetters(words[i]) < 5 {
+			words[i], words[j] = words[j], ""
+			j--
+		} else {
+			i++
+		}
+	}
+	words = words[:j+1]
+	words = words[:100]
+
+	const STRAT_NUM = 3
+	count := 0
+	for _, indices := range combine(len(words), STRAT_NUM) {
+		tmpWords := make([]string, STRAT_NUM)
+		for arrIdx, wordIdx := range indices {
+			tmpWords[arrIdx] = words[wordIdx-1]
+		}
+		if jaccardSimilarity(tmpWords...) < 0.2 {
+			count++
+			fmt.Println(tmpWords)
 		}
 	}
 
-	fmt.Println(wordDist)
-
-	fmt.Println(1-jaccardSimilarity(words[:3]...), words[:3])
-
-	// for i := 0; i < len(words); i++ {
-	// 	for j := 0; j < i; j++ {
-	// 		for k := 0; k < j; k++ {
-	// 			// fmt.Println(words[i], words[j], words[k])
-	// 		}
-	// 	}
-	// }
-
+	fmt.Println(count)
 }
