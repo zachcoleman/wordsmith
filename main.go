@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const STRAT_NUM = 3
+
 func distinctLetters(s string) int {
 	letterMap := make(map[rune]interface{})
 	count := 0
@@ -35,28 +37,36 @@ func jaccardSimilarity(words ...string) float64 {
 	return num / denom
 }
 
-func combine(n int, k int) [][]int {
-
-	if k == 1 {
-		ret := [][]int{}
-		for n > 0 {
-			ret = append(ret, []int{n})
-			n--
-		}
-		return ret
+func combine(n int, k int, outChan chan []int) {
+	comb := []int{}
+	for i := 1; i < k+1; i++ {
+		comb = append(comb, i)
 	}
+	outChan <- comb
 
-	ret := [][]int{}
-	for n > 1 {
-		set := combine(n-1, k-1)
-		for _, subset := range set {
-			tmp := append([]int{n}, subset...)
-			ret = append(ret, tmp)
+	for {
+		didBreak := false
+		i := k - 1
+		for i >= 0 {
+			if comb[i] != n-k+1+i {
+				didBreak = true
+				break
+			}
+			i--
 		}
-		n--
-	}
+		if !didBreak {
+			break
+		}
 
-	return ret
+		comb[i] += 1
+		for j := i + 1; j < k; j++ {
+			comb[j] = comb[j-1] + 1
+		}
+		tmp := make([]int, k)
+		copy(tmp, comb)
+		outChan <- tmp
+	}
+	close(outChan)
 }
 
 func main() {
@@ -81,18 +91,25 @@ func main() {
 	words = words[:j+1]
 	words = words[:100]
 
-	const STRAT_NUM = 3
-	count := 0
-	for _, indices := range combine(len(words), STRAT_NUM) {
-		tmpWords := make([]string, STRAT_NUM)
-		for arrIdx, wordIdx := range indices {
-			tmpWords[arrIdx] = words[wordIdx-1]
-		}
-		if jaccardSimilarity(tmpWords...) < 0.2 {
-			count++
-			fmt.Println(tmpWords)
-		}
+	resChan := make(chan []int)
+	go combine(10, STRAT_NUM, resChan)
+
+	for idx := range resChan {
+		fmt.Println(idx)
 	}
 
-	fmt.Println(count)
+	return
+
+	// count := 0
+	// for _, indices := range combine(len(words), STRAT_NUM) {
+	// 	tmpWords := make([]string, STRAT_NUM)
+	// 	for arrIdx, wordIdx := range indices {
+	// 		tmpWords[arrIdx] = words[wordIdx-1]
+	// 	}
+	// 	if jaccardSimilarity(tmpWords...) < 0.2 {
+	// 		count++
+	// 		fmt.Println(tmpWords)
+	// 	}
+	// }
+	// fmt.Println(count)
 }
