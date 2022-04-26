@@ -11,6 +11,20 @@ import (
 const STRAT_NUM = 3
 
 func main() {
+
+	n, k := 1_000, 3
+
+	count := 0
+	countMap := make(map[int]int)
+	for tmp := range utils.IndexCombinations(n, k) {
+		countMap[tmp[0]] += 1
+		count++
+	}
+	fmt.Println(countMap)
+	fmt.Println(count)
+
+	// numWorkers := 4
+
 	// read in file of words
 	content, err := ioutil.ReadFile("./words.txt")
 	if err != nil {
