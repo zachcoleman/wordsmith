@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
+	"math/rand"
+	"os"
 	"strings"
 	"sync"
 	"wordsmith/go-utils"
@@ -30,9 +33,15 @@ func main() {
 		}
 	}
 	words = words[:j+1]
-	words = words[:100]
 
-	// define multithreading params
+	// shuffle and sample data
+	for i := 0; i < len(words); i++ {
+		j, k := rand.Intn(len(words)), rand.Intn(len(words))
+		words[j], words[k] = words[k], words[j]
+	}
+	words = words[:1_000]
+
+	// define threading params
 	numWorkers := 4
 	inQueue := make(chan []string, numWorkers*10)
 	outQueue := make(chan []string, numWorkers*10)
@@ -67,8 +76,8 @@ func main() {
 		go func() {
 			defer evalWg.Done()
 			for tmpWords := range inQueue {
-				if utils.JaccardSimilarity(tmpWords...) < 0.1 {
-					fmt.Println(tmpWords)
+				if utils.JaccardSimilarity(tmpWords...) == 0 {
+					// fmt.Println(tmpWords)
 					outQueue <- tmpWords
 				}
 			}
@@ -80,8 +89,14 @@ func main() {
 	}()
 
 	// process outputs
-	for range outQueue {
-		left++
+	f, err := os.Create("candidates.txt")
+	if err != nil {
+		log.Fatal(err)
 	}
-	fmt.Println(total, left)
+	defer f.Close()
+	for candWords := range outQueue {
+		left++
+		f.WriteString(strings.Join(candWords, ",") + "\n")
+	}
+	fmt.Println(total, "->", left)
 }
