@@ -11,20 +11,6 @@ import (
 const STRAT_NUM = 3
 
 func main() {
-
-	n, k := 1_000, 3
-
-	count := 0
-	countMap := make(map[int]int)
-	for tmp := range utils.IndexCombinations(n, k) {
-		countMap[tmp[0]] += 1
-		count++
-	}
-	fmt.Println(countMap)
-	fmt.Println(count)
-
-	// numWorkers := 4
-
 	// read in file of words
 	content, err := ioutil.ReadFile("./words.txt")
 	if err != nil {
@@ -44,46 +30,58 @@ func main() {
 		}
 	}
 	words = words[:j+1]
-	words = words[:5]
+	words = words[:100]
 
-	num_workers := 2
-	inQueue := make(chan []string, num_workers*2)
-	outQueue := make(chan []string, num_workers*2)
-	var wg sync.WaitGroup
+	// define multithreading params
+	numWorkers := 4
+	inQueue := make(chan []string, numWorkers*10)
+	outQueue := make(chan []string, numWorkers*10)
+	var evalWg sync.WaitGroup
+	var indexWg sync.WaitGroup
 
-	for i := 0; i < num_workers; i++ {
-		wg.Add(1)
+	// generate indices and define word combinations
+	total, left := 0, 0
+	combChan := utils.IndexCombinationsMulti(len(words), STRAT_NUM, numWorkers)
+	for i := 0; i < numWorkers; i++ {
+		indexWg.Add(1)
 		go func() {
-			defer wg.Done()
+			defer indexWg.Done()
+			for indices := range combChan {
+				tmpWords := make([]string, STRAT_NUM)
+				for arrIdx, wordIdx := range indices {
+					tmpWords[arrIdx] = words[wordIdx-1]
+				}
+				total++
+				inQueue <- tmpWords
+			}
+		}()
+	}
+	go func() {
+		indexWg.Wait()
+		close(inQueue)
+	}()
+
+	// start evaluation workers
+	for i := 0; i < numWorkers; i++ {
+		evalWg.Add(1)
+		go func() {
+			defer evalWg.Done()
 			for tmpWords := range inQueue {
-				if utils.JaccardSimilarity(tmpWords...) < 0.2 {
+				if utils.JaccardSimilarity(tmpWords...) < 0.1 {
+					fmt.Println(tmpWords)
 					outQueue <- tmpWords
 				}
 			}
 		}()
 	}
 	go func() {
-		wg.Wait()
+		evalWg.Wait()
 		close(outQueue)
 	}()
 
-	total, left := 0, 0
-	go func() {
-		for indices := range utils.IndexCombinations(len(words), STRAT_NUM) {
-			fmt.Println(indices)
-			tmpWords := make([]string, STRAT_NUM)
-			for arrIdx, wordIdx := range indices {
-				tmpWords[arrIdx] = words[wordIdx-1]
-			}
-			total++
-			inQueue <- tmpWords
-		}
-		close(inQueue)
-	}()
-
+	// process outputs
 	for range outQueue {
 		left++
 	}
-
 	fmt.Println(total, left)
 }

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -48,8 +47,6 @@ func Factorial(n int) int {
 }
 
 func Choose(n int, k int) int {
-	num, denom := 1, 1
-
 	// Example: C(10, 3)
 	// since 7 > 3 want to eliminate
 	// 7 multiplications instead of 3:
@@ -57,6 +54,7 @@ func Choose(n int, k int) int {
 	// not this: 10*9*8*7*6*5*4 / 7*6*5*4*3*2*1
 	//
 	// for C(10, 7)
+	num, denom := 1, 1
 	if n-k > k {
 		for i := n; i > n-k; i-- {
 			num *= i
@@ -76,7 +74,7 @@ func Choose(n int, k int) int {
 }
 
 func IndexCombinations(n int, k int) chan []int {
-	incrementCounts, rectifyCounts := 0, 0
+	// incrementCounts, rectifyCounts := 0, 0
 	ret := make(chan []int, 2*k+1)
 	go func() {
 		comb := []int{}
@@ -109,12 +107,11 @@ func IndexCombinations(n int, k int) chan []int {
 				but in reality we need to go to:
 					[1, 3, 4]
 			*/
-
-			if i+1 < k {
-				rectifyCounts++
-			} else {
-				incrementCounts++
-			}
+			// if i+1 < k {
+			// 	rectifyCounts++
+			// } else {
+			// 	incrementCounts++
+			// }
 
 			// This seems to be most expensive operation and
 			// largest bottleneck for generating combinations
@@ -133,8 +130,8 @@ func IndexCombinations(n int, k int) chan []int {
 			ret <- tmp
 		}
 		close(ret)
-		fmt.Println("rectifyCounts: ", rectifyCounts)
-		fmt.Println("incrementCounts: ", incrementCounts)
+		// fmt.Println("rectifyCounts: ", rectifyCounts)
+		// fmt.Println("incrementCounts: ", incrementCounts)
 	}()
 
 	return ret
@@ -202,7 +199,7 @@ func splitDomain(n int, k int, numWorkers int) [][2]int {
 	for i := 1; i <= n-k+1; i++ {
 		runningTotal += Choose(n-i, k-1)
 		if qIdx < len(quants) && float32(runningTotal)/float32(total) >= quants[qIdx] {
-			fmt.Println(quants[qIdx], i, float32(runningTotal)/float32(total))
+			// fmt.Println(quants[qIdx], i, float32(runningTotal)/float32(total))
 			breakPts = append(breakPts, [2]int{prev, i})
 			prev = i
 			qIdx++
@@ -213,7 +210,6 @@ func splitDomain(n int, k int, numWorkers int) [][2]int {
 }
 
 func IndexCombinationsMulti(n int, k int, numWorkers int) chan []int {
-
 	// if not possible to divide up leftmost digits
 	// into numWorkers sets to work then revise numWorkers
 	// this implies this strategy of dividing up combo generation
@@ -229,25 +225,25 @@ func IndexCombinationsMulti(n int, k int, numWorkers int) chan []int {
 	// reframing of problem is more memory efficient if put back on caller
 	// or convenience method could be made s.t the complement is automatically
 	// calculated and yielded back
-
 	breakPts := splitDomain(n, k, numWorkers)
 	if len(breakPts) < numWorkers {
 		numWorkers = len(breakPts)
 	}
-
-	ret := make(chan []int, numWorkers*4)
+	ret := make(chan []int, numWorkers*200)
 	var wg sync.WaitGroup
+
 	for w := 0; w < numWorkers; w++ {
+		start, finish := breakPts[w][0], breakPts[w][1]
 		wg.Add(1)
-		go func() {
+		go func(start, finish int) {
 			defer wg.Done()
 			comb := []int{}
-			for i := 1; i < k+1; i++ {
+			for i := start + 1; i < start+k+1; i++ {
 				comb = append(comb, i)
 			}
 			ret <- comb
 
-			for {
+			for comb[0] <= finish {
 				didBreak := false
 				i := k - 1
 				for i >= 0 {
@@ -265,13 +261,18 @@ func IndexCombinationsMulti(n int, k int, numWorkers int) chan []int {
 				for j := i + 1; j < k; j++ {
 					comb[j] = comb[j-1] + 1
 				}
+				if comb[0] > finish {
+					break
+				}
 				tmp := make([]int, k)
 				copy(tmp, comb)
 				ret <- tmp
 			}
-			close(ret)
-		}()
+		}(start, finish)
 	}
-
+	go func() {
+		wg.Wait()
+		close(ret)
+	}()
 	return ret
 }
