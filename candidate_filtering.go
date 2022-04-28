@@ -12,10 +12,11 @@ import (
 )
 
 const STRAT_NUM = 3
+const SAMPLE_SIZE = 1_000
 
 func main() {
 	// read in file of words
-	content, err := ioutil.ReadFile("./words.txt")
+	content, err := ioutil.ReadFile("./data/words.txt")
 	if err != nil {
 		fmt.Println("error reading file")
 		return
@@ -39,7 +40,7 @@ func main() {
 		j, k := rand.Intn(len(words)), rand.Intn(len(words))
 		words[j], words[k] = words[k], words[j]
 	}
-	words = words[:1_000]
+	words = words[:SAMPLE_SIZE]
 
 	// define threading params
 	numWorkers := 4
@@ -89,7 +90,7 @@ func main() {
 	}()
 
 	// process outputs
-	f, err := os.Create("candidates.txt")
+	f, err := os.Create("./data/candidates.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
