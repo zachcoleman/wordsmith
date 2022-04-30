@@ -1,28 +1,38 @@
+# cython: language_level=3
+
 import os
 from typing import List
 
 from wordsmith.info import Information
 
 
-class WordDatabase:
-    def __init__(self, fp: os.PathLike) -> None:
+cdef class WordDatabase:
+    
+    cdef public list words
+    
+    def __cinit__(self, fp: os.PathLike) -> None:
         with open(fp, "r") as f:
             self.words = f.read().splitlines()
 
-    def query(self, info_state: Information) -> List[str]:
-        possible = []
+    def query(self, info_state: Information) -> List[str]:        
+        cdef list possible = []
+        cdef str word
+        cdef str l, k
+        cdef bint skip, no_skip
+        cdef set not_set
+
         for word in self.words:
             skip = False
-            for let in word:
-                if let in info_state.not_set:
+            for l in word:
+                if l in info_state.not_set:
                     skip = True
                     break
             if skip:
                 continue
-
+            
             if not info_state.has_set.issubset(set(word)):
                 continue
-
+            
             no_skip = True
             for k, l in zip(info_state.known_pos, word):
                 if k is not None and k != l:
