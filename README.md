@@ -10,7 +10,7 @@ The word bank in `data/` contains 15,918 5-letter words. If a 3 word starting st
 
 The python package (wordsmith) provides code to evaluate a strategy by comparing the distribution of remaining possibilities over a sample of hidden words for a strategy (i.e.how well a set of guesses narrows down the possible hidden words).
 
-This empirically driven evaluation method makes it infeasible to reasonably calculate/parse teh entire ~672B combinations. The following assumption is made to reduce the search space: an optimal strategy will contain only unique letters across the words.
+This empirically driven evaluation method makes it infeasible to reasonably calculate/parse the entire ~672B combinations. The following assumption is made to reduce the search space: an optimal strategy will contain only unique letters across the words.
 
 To even evaluate the letter-uniqueness of a set of words can be quite cumbersome to compute for this many possible combinations. Therefore, Go is used for its fast computing and multithreading to parse through a sample of combinations. 
 
