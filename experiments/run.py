@@ -5,9 +5,7 @@ from wordsmith.db import WordDatabase
 from wordsmith.game import Game
 
 # times:
-# - original code: 34.28s
-# - reordering set checks: 33.56s
-# - typing cython: ~34s
+# - original code: ~34s
 # - python + optimal reordering: ~15s
 # - typing cython + reordering optimal: ~7.3s
 
