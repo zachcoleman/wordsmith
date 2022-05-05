@@ -48,22 +48,16 @@ impl Information {
 
     pub fn print(&self) {
         println!("has set: ");
-        {
-            let tmp: String = self.has_set.clone().into_iter().collect();
-            println!("  {}", tmp);
-        }
+        let tmp: String = self.has_set.clone().into_iter().collect();
+        println!("  {}", tmp);
 
         println!("not set:");
-        {
-            let tmp: String = self.not_set.clone().into_iter().collect();
-            println!("  {}", tmp);
-        }
+        let tmp: String = self.not_set.clone().into_iter().collect();
+        println!("  {}", tmp);
 
         println!("known pos:");
-        {
-            let tmp: String = self.known_pos.clone().into_iter().collect();
-            println!("  {}", tmp);
-        }
+        let tmp: String = self.known_pos.clone().into_iter().collect();
+        println!("  {}", tmp);
 
         println!("not pos:");
         for v in self.not_pos.clone() {
