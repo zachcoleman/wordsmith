@@ -6,6 +6,21 @@ const WORD_LEN: usize = 5;
 const STRAT_NUM: i32 = 3;
 const EMPTY_CHAR_VEC: Vec<char> = vec![];
 
+
+fn main() {
+    let lines = match fs::read_to_string("./data/candidates.txt") {
+        Ok(buff) => buff,
+        Err(_) => panic!("Error reading candidates file."),
+    };
+
+    let hidden_word = "hairy";
+    let guess_words = vec!["adieu", "chair", "wilks"];
+
+    let mut info = Information::new();
+    info.update_info(hidden_word, guess_words);
+    info.print();
+}
+
 struct Information {
     has_set: HashSet<char>,
     not_set: HashSet<char>,
@@ -65,18 +80,4 @@ impl Information {
             println!("  {}", tmp);
         }
     }
-}
-
-fn main() {
-    let lines = match fs::read_to_string("./data/candidates.txt") {
-        Ok(buff) => buff,
-        Err(_) => panic!("Error reading candidates file."),
-    };
-
-    let hidden_word = "hairy";
-    let guess_words = vec!["adieu", "chair", "wilks"];
-
-    let mut info = Information::new();
-    info.update_info(hidden_word, guess_words);
-    info.print();
 }
