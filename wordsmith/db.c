@@ -2147,7 +2147,7 @@ static PyObject *__pyx_pf_9wordsmith_2db_12WordDatabase_2query(struct __pyx_obj_
  *             if not no_skip:
  *                 continue             # <<<<<<<<<<<<<<
  * 
- *             skip = True
+ *             skip = False
  */
       goto __pyx_L3_continue;
 
@@ -2163,18 +2163,18 @@ static PyObject *__pyx_pf_9wordsmith_2db_12WordDatabase_2query(struct __pyx_obj_
     /* "wordsmith/db.pyx":44
  *                 continue
  * 
- *             skip = True             # <<<<<<<<<<<<<<
+ *             skip = False             # <<<<<<<<<<<<<<
  *             for not_set, l in zip(info_state.not_pos, word):
  *                 if len(not_set) > 0 and l in not_set:
  */
-    __pyx_v_skip = 1;
+    __pyx_v_skip = 0;
 
     /* "wordsmith/db.pyx":45
  * 
- *             skip = True
+ *             skip = False
  *             for not_set, l in zip(info_state.not_pos, word):             # <<<<<<<<<<<<<<
  *                 if len(not_set) > 0 and l in not_set:
- *                     skip = False
+ *                     skip = True
  */
     __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_info_state, __pyx_n_s_not_pos); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 45, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_14);
@@ -2283,10 +2283,10 @@ static PyObject *__pyx_pf_9wordsmith_2db_12WordDatabase_2query(struct __pyx_obj_
       __pyx_t_13 = 0;
 
       /* "wordsmith/db.pyx":46
- *             skip = True
+ *             skip = False
  *             for not_set, l in zip(info_state.not_pos, word):
  *                 if len(not_set) > 0 and l in not_set:             # <<<<<<<<<<<<<<
- *                     skip = False
+ *                     skip = True
  *                     break
  */
       if (unlikely(__pyx_v_not_set == Py_None)) {
@@ -2313,54 +2313,54 @@ static PyObject *__pyx_pf_9wordsmith_2db_12WordDatabase_2query(struct __pyx_obj_
         /* "wordsmith/db.pyx":47
  *             for not_set, l in zip(info_state.not_pos, word):
  *                 if len(not_set) > 0 and l in not_set:
- *                     skip = False             # <<<<<<<<<<<<<<
+ *                     skip = True             # <<<<<<<<<<<<<<
  *                     break
- *             if not skip:
+ *             if skip:
  */
-        __pyx_v_skip = 0;
+        __pyx_v_skip = 1;
 
         /* "wordsmith/db.pyx":48
  *                 if len(not_set) > 0 and l in not_set:
- *                     skip = False
+ *                     skip = True
  *                     break             # <<<<<<<<<<<<<<
- *             if not skip:
+ *             if skip:
  *                 continue
  */
         goto __pyx_L19_break;
 
         /* "wordsmith/db.pyx":46
- *             skip = True
+ *             skip = False
  *             for not_set, l in zip(info_state.not_pos, word):
  *                 if len(not_set) > 0 and l in not_set:             # <<<<<<<<<<<<<<
- *                     skip = False
+ *                     skip = True
  *                     break
  */
       }
 
       /* "wordsmith/db.pyx":45
  * 
- *             skip = True
+ *             skip = False
  *             for not_set, l in zip(info_state.not_pos, word):             # <<<<<<<<<<<<<<
  *                 if len(not_set) > 0 and l in not_set:
- *                     skip = False
+ *                     skip = True
  */
     }
     __pyx_L19_break:;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
     /* "wordsmith/db.pyx":49
- *                     skip = False
+ *                     skip = True
  *                     break
- *             if not skip:             # <<<<<<<<<<<<<<
+ *             if skip:             # <<<<<<<<<<<<<<
  *                 continue
  * 
  */
-    __pyx_t_11 = ((!(__pyx_v_skip != 0)) != 0);
+    __pyx_t_11 = (__pyx_v_skip != 0);
     if (__pyx_t_11) {
 
       /* "wordsmith/db.pyx":50
  *                     break
- *             if not skip:
+ *             if skip:
  *                 continue             # <<<<<<<<<<<<<<
  * 
  *             possible.append(word)
@@ -2368,9 +2368,9 @@ static PyObject *__pyx_pf_9wordsmith_2db_12WordDatabase_2query(struct __pyx_obj_
       goto __pyx_L3_continue;
 
       /* "wordsmith/db.pyx":49
- *                     skip = False
+ *                     skip = True
  *                     break
- *             if not skip:             # <<<<<<<<<<<<<<
+ *             if skip:             # <<<<<<<<<<<<<<
  *                 continue
  * 
  */

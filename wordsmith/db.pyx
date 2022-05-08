@@ -41,12 +41,12 @@ cdef class WordDatabase:
             if not no_skip:
                 continue
 
-            skip = True
+            skip = False
             for not_set, l in zip(info_state.not_pos, word):
                 if len(not_set) > 0 and l in not_set:
-                    skip = False
+                    skip = True
                     break
-            if not skip:
+            if skip:
                 continue
 
             possible.append(word)
