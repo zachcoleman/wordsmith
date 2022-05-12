@@ -18,4 +18,61 @@ The Go program `candidate_filtering` parses the approximately 10,000 words with 
 
 ## Evaluation
 
+Evaluation of a strategy (a set of words) is defined by the strategy's filtering of of possible words. An example:
+
+```python
+db = WordDatabase("../data/words.txt")
+strat = ["leaks", "dumby", "wrong"]
+
+words_left = []
+for word in db.words:
+    game = Game(word)
+    info = game.generate_information(strat)
+    words_left.append(len(db.query(info)))
+```
+
+This evaluation produces `words_left` and taking a summary statistic like mean or median this strategy can be judged against other strategies. In this case, `["leaks", "dumby", "wrong"]` on average leaves `9.06` possibilities and the median possible words left is `4`.
+
+## Optimization
+
+This evaluation of a strategy against our database of all words is an expensive operation. In the example above, `%%timeit` shows:
+
+<!-- ![img](./assets/orig_time.png) -->
+<img src=./assets/orig_time.png width=50% >
+
+For 215K possible strategies at 10s a strategy results in ~600 hours of compute. Using multiple will lead to linear scaling. While this is possible for a cluster to compute in a reasonable time, optimizing single threaded performance can make this more feasible.
+
+Querying consists of determining the possible words left given an `Information` object. The information at any point in a Wordle game can be characterized by 4 sets of information: letters in `hidden_word`, letters not in `hidden_word`, letters in known position of `hidden_word`, and letters not in a position of `hidden_word`. Testing if a word meets all these criteria determines if it is still eligible. Profiling how expensive each operation is results in:
+
+<!-- ![img](./assets/query_profile/has_set.png)
+![img](./assets/query_profile/not_set.png)
+![img](./assets/query_profile/known_pos.png)
+![img](./assets/query_profile/not_pos.png) -->
+<img src=./assets/query_profile/has_set.png width=50% >
+<img src=./assets/query_profile/not_set.png width=50% >
+<img src=./assets/query_profile/known_pos.png width=50% >
+<img src=./assets/query_profile/not_pos.png width=50% >
+
+From this a simple optimal ordering of checks and early termination leads to speed up of:
+
+<!-- ![img](./assets/optim_time.png) -->
+<img src=./assets/optim_time.png width=50% >
+
+A simple Cython implementation leads to farther speed up of:
+
+<!-- ![img](./assets/cython_optim_time.png) -->
+<img src=./assets/cython_optim_time.png width=50% >
+
+To push it even farther a Rust implementation was written as well in `rust_impl` and resulted in ~2x speed up from the Cython above:
+
+<!-- ![img](./assets/rust_time.png) -->
+<img src=./assets/rust_time.png width=50% >
+
 ## Results
+
+A random search of a subset of the strategy space with `experiments/run.py` is done by: evaluating 1,000 3-word strategies from the `data/candidates.txt` against 1,000 random hidden words.
+
+The following are optimal strategies starting strategies:
+
+<!-- ![img](./assets/1K_results.png) -->
+<img src=./assets/1K_results.png width=50%>

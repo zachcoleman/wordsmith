@@ -1,30 +1,30 @@
 use std::collections::HashSet;
 use std::fs;
 use std::iter::zip;
+use rand::seq::SliceRandom;
 
 const WORD_LEN: usize = 5;
 const STRAT_NUM: i32 = 3;
 
 fn main() {
-    // let lines = match fs::read_to_string("./data/candidates.txt") {
-    //     Ok(buff) => buff,
-    //     Err(_) => panic!("Error reading candidates file."),
-    // };
+    // read in strategies
+    let lines = match fs::read_to_string("../data/candidates.txt") {
+        Ok(buff) => buff,
+        Err(_) => panic!("Error reading candidates file."),
+    };
+    let lines: Vec<String> = lines.split("\n").map(String::from).collect();
+    let strats: Vec<Vec<String>> = lines.iter().map(|x| x.split(",").map(String::from).collect()).collect();
 
-    // may switch to String arguments for Information depending on
-    // the conversion of lines in file to str or String
+    // read in words
+    let db = Database::from_file("../data/words.txt");
 
-    let db = Database::from_file("./data/words.txt");
-    let hidden_word = "hairy";
-    let guess_words = vec!["adieu", "chair", "wilks"];
+    let guess_words = vec!["leaks".to_string(), "dumby".to_string(), "wrong".to_string()];
+    let sample: Vec<&String> = db.words.iter().collect();
 
-    let mut info = Information::new();
-    info.update_info(hidden_word, guess_words);
-    info.print();
-
-    let res = db.query(info);
-    for poss in res {
-        println!("{}", poss);
+    for hidden_word in sample {
+        let mut info = Information::new();
+        info.update_info(hidden_word, &guess_words);
+        _ = db.query(info);
     }
 }
 
@@ -49,7 +49,7 @@ impl Information {
         };
     }
 
-    pub fn update_info(&mut self, hidden_word: &str, guesses: Vec<&str>) {
+    pub fn update_info(&mut self, hidden_word: &String, guesses: &Vec<String>) {
         let hidden_set: HashSet<char> = hidden_word.chars().collect();
         for guess_word in guesses {
             for (i, (guess_char, hidden_char)) in

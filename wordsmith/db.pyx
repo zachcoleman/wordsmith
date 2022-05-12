@@ -6,11 +6,12 @@ from typing import List
 from wordsmith.info import Information
 
 
-cdef class WordDatabase:
+# cdef class WordDatabase:
+class WordDatabase:
     
-    cdef public list words
+    # cdef public list words
     
-    def __cinit__(self, fp: os.PathLike) -> None:
+    def __init__(self, fp: os.PathLike) -> None:
         with open(fp, "r") as f:
             self.words = f.read().splitlines()
 
