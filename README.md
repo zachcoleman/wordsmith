@@ -33,16 +33,16 @@ for word in db.words:
 
 This evaluation produces `words_left` and taking a summary statistic like mean or median this strategy can be judged against other strategies. In this case, `["leaks", "dumby", "wrong"]` on average leaves `9.06` possibilities and the median possible words left is `4`.
 
-## Optimization
+## Optimization of Strategy Evaluation
 
-This evaluation of a strategy against our database of all words is an expensive operation. In the example above, `%%timeit` shows:
+This evaluation of a strategy against the database of words is an expensive operation. In the example above, `%%timeit` shows:
 
 <!-- ![img](./assets/orig_time.png) -->
 <img src=./assets/orig_time.png width=50% >
 
-For 215K possible strategies at 10s a strategy results in ~600 hours of compute. Using multiple will lead to linear scaling. While this is possible for a cluster to compute in a reasonable time, optimizing single threaded performance can make this more feasible.
+For 215K possible strategies at approx. 10s a strategy, the compute time would be ~600 hours. Using multiple cores or a cluster will lead to linear scaling for this problem. While this is possible for a large cluster to compute in a reasonable time, optimizing single threaded performance and sub-sampling the problem space can produce meaningful results for feasible time and compute.
 
-Querying consists of determining the possible words left given an `Information` object. The information at any point in a Wordle game can be characterized by 4 sets of information: letters in `hidden_word`, letters not in `hidden_word`, letters in known position of `hidden_word`, and letters not in a position of `hidden_word`. Testing if a word meets all these criteria determines if it is still eligible. Profiling how expensive each operation is results in:
+Querying consists of determining the possible words left given an `Information` object. The _information_ at any point in a Wordle game can be characterized by 4 sets: letters in `hidden_word`, letters not in `hidden_word`, letters in known position of `hidden_word`, and letters not in a position of `hidden_word`. Testing a word against these 4 criteria determines if a word is eligible. Profiling how expensive each operation is results in:
 
 <!-- ![img](./assets/query_profile/has_set.png)
 ![img](./assets/query_profile/not_set.png)
